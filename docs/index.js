@@ -1,22 +1,30 @@
-var Model = function (state) {
-  this.listeners = [];
-  this.state = state;
-};
+var createStore = function (reducer) {
+  var state;
+  var listeners = [];
 
-Model.prototype.getState = function () {
-  return this.state;
-};
+  function getState() {
+    return state;
+  }
 
-Model.prototype.onChange = function (listener) {
-  this.listeners.push(listener);
-};
+  function dispatch(action) {
+    state = reducer(state, action);
+    listeners.forEach(l => l());
+  }
 
-Model.prototype.set = function (value) {
-  this.state = value;
-  this.listeners.forEach(l => l());
-};
+  function subscribe(listener) {
+    listeners.push(listener);
+  }
 
-var appStateLive = new Model('');
+  dispatch({ type: '@@INIT' });
+
+  return {
+    getState: getState,
+    dispatch: dispatch,
+    subscribe: subscribe
+  };
+}
+
+var store = createStore(reducer);
 
 function box(props) {
   return div({}, props.children);
@@ -29,33 +37,52 @@ function title(props) {
   }, props.text);
 }
 
-// app :: state -> UI
-function app(state) {
+var CHANGE_TEXT = 'CHANGE_TEXT';
 
-  function changeText(text) {
-    appStateLive.set(text);
+function changeText(text) {
+  return {
+    type: CHANGE_TEXT,
+    payload: text
+  };
+}
+
+function reducer(state = '', action) {
+  switch (action.type) {
+    case CHANGE_TEXT:
+      return action.payload;
+    default:
+      return state;
   }
+}
+
+// app :: state -> UI
+function app(props) {
 
   return box({ children: [
-    title({ color: 'tomato', text: state, onClick: function (e) {
-      changeText('Hello world!');
-    }}),
+    title({
+      color: 'tomato',
+      text: props.state,
+      onClick: function (e) {
+        props.dispatch(changeText('Hello world!'));
+      }
+    }),
     p({ onClick: function (e) {
-      changeText('Meh...');
+      props.dispatch(changeText('Meh...'));
     }}, 'Render all the things!'),
     button({ onClick: function (e) {
-      changeText('GoodBye world!')
+      props.dispatch(changeText('GoodBye world!'))
     }}, 'say goodbye')
   ]});
 }
 
 var root = document.getElementById('app');
 
-renderToDOM(app(appStateLive.getState()), root);
-
-appStateLive.onChange(function () {
+store.subscribe(function () {
   root.innerHTML = '';
-  var state = appStateLive.getState();
-  renderToDOM(app(state), root);
+  var state = store.getState();
+  console.log(store);
+  renderToDOM(app({ state: state, dispatch: store.dispatch }), root);
 });
+
+store.dispatch({ type: 'INIT' });
 
