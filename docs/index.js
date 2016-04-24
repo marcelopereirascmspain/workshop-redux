@@ -1,35 +1,31 @@
 var state = 'Hello world!';
 
-function h1(attrs, children) {
+var d = tagName => (attrs, children) => {
   return {
-    type: 'h1',
+    type: tagName,
     attrs: attrs,
     children: children
   };
-}
+};
 
-function p(attrs, children) {
-  return {
-    type: 'p',
-    attrs: attrs,
-    children: children
-  };
-}
-
-function div(attrs, children) {
-  return {
-    type: 'div',
-    attrs: attrs,
-    children: children
-  };
-}
+var h1 = d('h1');
+var p = d('p');
+var div = d('div');
 
 // app :: state -> UI
 function app(state) {
-  return div({}, [
-    h1({style: 'color:green'}, state),
+  return box({ children: [
+    title({ color: 'tomato', text: state}),
     p({}, 'Render all the things!')
-  ]);
+  ]});
+}
+
+function box(props) {
+  return div({}, props.children);
+}
+
+function title(props) {
+  return h1({ style: 'color: ' + props.color}, props.text);
 }
 
 function renderToDOM(component, node) {
@@ -38,7 +34,7 @@ function renderToDOM(component, node) {
   var children = component.children;
 
   var domElement = document.createElement(type);
-  
+
   Object.keys(attrs).forEach(key => {
     var value = attrs[key];
     domElement.setAttribute(key, value);
