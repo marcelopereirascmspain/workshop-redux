@@ -9,6 +9,7 @@ var d = tagName => (attrs, children) => {
 var h1 = d('h1');
 var p = d('p');
 var div = d('div');
+var button = d('button');
 
 function renderToDOM(component, node) {
   var type = component.type;
