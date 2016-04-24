@@ -1,3 +1,5 @@
+var CUTREact = {};
+
 var d = tagName => (attrs, children) => {
   return {
     type: tagName,
@@ -6,12 +8,12 @@ var d = tagName => (attrs, children) => {
   };
 };
 
-var h1 = d('h1');
-var p = d('p');
-var div = d('div');
-var button = d('button');
+CUTREact.h1 = d('h1');
+CUTREact.p = d('p');
+CUTREact.div = d('div');
+CUTREact.button = d('button');
 
-function renderToDOM(component, node) {
+CUTREact.render = function (component, node) {
   var type = component.type;
   var attrs = component.attrs;
   var children = component.children;
@@ -35,7 +37,7 @@ function renderToDOM(component, node) {
   } else {
     // llamamos recursivamente renderToDOM
     // renderizando el el nodo padre
-    children.map(child => renderToDOM(child, domElement));
+    children.map(child => CUTREact.render(child, domElement));
   }
   
   node.appendChild(domElement);
